@@ -138,13 +138,13 @@ public class UDLHandlerService {
         String ip;
         try {
             ip = InetAddress.getByName(httpReq.getURI().getHost()).getHostAddress();
-            logger.info("Sending {} request to {} at URL {}",method,ip,uri);
+            logger.debug("Sending {} request to {} at URL {}",method,ip,uri);
         } catch (UnknownHostException e1) {
             logger.error(e1.getMessage());
         }
 
         try (CloseableHttpResponse response = httpClient.execute(httpReq, httpClientContext)) {
-            logger.info("Got response: {}",response);
+            logger.debug("Got response: {}",response);
 
             long contentLength = response.getEntity().getContentLength();
             if(contentLength > MAX_INPUT_SIZE) {

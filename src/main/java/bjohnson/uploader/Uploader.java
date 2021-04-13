@@ -3,6 +3,7 @@ package bjohnson.uploader;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.cli.*;
+import org.apache.commons.math3.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,16 +70,26 @@ public class Uploader {
         //read file and parse datas
         Gson gson = new Gson();
         List<String> jsonDataArray = loadArrayJsonFile(Paths.get(cmd.getOptionValue("f"))).stream().map(gson::toJson).collect(Collectors.toList());
+        logger.info("Uploading entries");
+        boolean success=true;
         for (String s : jsonDataArray) {
             try {
-                service.send("POST", s, endpoint);
+                Pair<Integer, String> response = service.send("POST", s, endpoint);
+                if (response.getFirst() >= 400 || response.getFirst() < 200) {
+                    logger.error("Failed to send\n{}\n{}",s,response.getSecond());
+                    success=false;
+                }
             } catch (URISyntaxException e) {
                 e.printStackTrace();
                 return;
             } catch (HTTPException e) {
                 logger.error(e.getMessage());
-
             }
+        }
+        if (success) {
+            logger.info("All messages sent successfully");
+        }else{
+            logger.info("Some data failed to upload");
         }
     }
     public static List<Map<String,Object>> loadArrayJsonFile(Path file) throws IOException {
